@@ -7,6 +7,7 @@ import(
 	"os"
 	"log"
 	"github.com/ShivamIITK21/cflockout-backend/models"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -42,6 +43,11 @@ func autoMigrateAll(db *gorm.DB) error{
 }
 
 func setupDB() *gorm.DB {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error reading .env file")
+	}
+
 	config := genConfig()
 	db, err := newConnection(config)
 	if err != nil {

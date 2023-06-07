@@ -31,7 +31,7 @@ func ProblemParser(rawData []byte) ([]models.Problem, error) {
 	for _, p := range allProblems{
 		var prob models.Problem
 		q := p.(map[string]interface{})
-		prob.ContestID = q["contestId"].(float64)
+		prob.ContestID = uint(q["contestId"].(float64))
 		index := q["index"].(string)
 		prob.Index = &index
 		name := q["name"].(string)
@@ -39,18 +39,22 @@ func ProblemParser(rawData []byte) ([]models.Problem, error) {
 		rating := q["rating"]
 		if rating != nil{
 			rat := rating.(float64)
-			prob.Rating = rat
+			prob.Rating = uint(rat)
 		} else{
 			rat := float64(0)
-			prob.Rating = rat
+			prob.Rating = uint(rat)
 		}
 		tagsInt, ok := q["tags"].([]interface{})
 		if !ok {
 			fmt.Println("Bruh")
 		}
-		for _, tag := range tagsInt{
-			tagstr := tag.(string)
-			prob.Tags = append(prob.Tags, &tagstr)
+		var tagArr []string
+		prob.Tags = &tagArr
+		if len(tagsInt) > 0{
+			for _, tag := range tagsInt{
+				tagstr := tag.(string)
+				*prob.Tags = append(*prob.Tags, tagstr)
+			}
 		}
 		processedProblems = append(processedProblems, prob)
 	}

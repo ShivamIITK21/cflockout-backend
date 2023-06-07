@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ShivamIITK21/cflockout-backend/helpers"
 	"github.com/ShivamIITK21/cflockout-backend/db"
+	"github.com/ShivamIITK21/cflockout-backend/helpers"
+	"github.com/ShivamIITK21/cflockout-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,9 +38,16 @@ func RefreshController() gin.HandlerFunc{
 		if err != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while parsing the problems in the server"})
 		}
+
+		result := db.DB.Where("1 = 1").Delete(&models.Problem{})
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not empty database"})
+		}
 		
-		fmt.Println(problems)
-		db.DB.Create(problems)
+		result = db.DB.Create(&problems)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not fill database"})
+		}
 
 		c.JSON(200, gin.H{"chill" : "hai"})
 	}
