@@ -29,12 +29,30 @@ func ProblemParser(rawData []byte) ([]models.Problem, error) {
 	}
 
 	for _, p := range allProblems{
-		probModel, ok := p.(models.Problem)
-		if !ok {
-			fmt.Println("Sorry could not parse")
-			continue
+		var prob models.Problem
+		q := p.(map[string]interface{})
+		prob.ContestID = q["contestId"].(float64)
+		index := q["index"].(string)
+		prob.Index = &index
+		name := q["name"].(string)
+		prob.Name = &name
+		rating := q["rating"]
+		if rating != nil{
+			rat := rating.(float64)
+			prob.Rating = rat
+		} else{
+			rat := float64(0)
+			prob.Rating = rat
 		}
-		processedProblems = append(processedProblems, probModel)
+		tagsInt, ok := q["tags"].([]interface{})
+		if !ok {
+			fmt.Println("Bruh")
+		}
+		for _, tag := range tagsInt{
+			tagstr := tag.(string)
+			prob.Tags = append(prob.Tags, &tagstr)
+		}
+		processedProblems = append(processedProblems, prob)
 	}
 
 	return processedProblems, nil
