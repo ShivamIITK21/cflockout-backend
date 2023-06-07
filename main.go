@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/ShivamIITK21/cflockout-backend/db"
 	"github.com/ShivamIITK21/cflockout-backend/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -17,14 +16,6 @@ func main(){
 		log.Fatal("Error reading .env file")
 	}
 
-	config := db.GenConfig()
-	DB, err := db.NewConnection(config)
-
-	if err != nil {
-		log.Fatal("Error in Opening Connection")
-	}
-
-	db.AutoMigrateAll(DB)
 
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {

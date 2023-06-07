@@ -18,7 +18,7 @@ type Config struct {
 	SslMode  string
 }
 
-func GenConfig() *Config {
+func genConfig() *Config {
 	config := &Config{
 		Host: os.Getenv("HOST"),
 		User: os.Getenv("USER"),
@@ -30,19 +30,28 @@ func GenConfig() *Config {
 	return config
 }
 
-func NewConnection(config *Config) (*gorm.DB, error) {
+func newConnection(config *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.Host, config.User, config.Password, config.DBName, config.Port, config.SslMode)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("Error Connecting to Database")
-	}
 	return db, err
 }
 
-func AutoMigrateAll(db *gorm.DB) error{
+func autoMigrateAll(db *gorm.DB) error{
 	err := db.AutoMigrate(&models.Problem{})
-	if err != nil {
-		log.Fatal("Error during Automigrate")
-	}
 	return err
 }
+
+func setupDB() *gorm.DB {
+	config := genConfig()
+	db, err := newConnection(config)
+	if err != nil {
+		log.Fatal("Error Connecting to Postgres")
+	}
+	err = autoMigrateAll(db)
+	if err != nil {
+		log.Fatal("Error in Migrating Models")
+	}
+	return db
+}
+
+var DB = setupDB()

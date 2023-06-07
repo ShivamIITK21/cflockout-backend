@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ShivamIITK21/cflockout-backend/helpers"
+	"github.com/ShivamIITK21/cflockout-backend/db"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,6 +40,7 @@ func RefreshController() gin.HandlerFunc{
 		}
 		
 		fmt.Println(problems)
+		db.DB.Create(problems)
 
 		c.JSON(200, gin.H{"chill" : "hai"})
 	}
