@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -114,7 +113,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 		}
 
 		var allProbData []models.Submission
-		for i, pData := range allProbs{
+		for _, pData := range allProbs{
 			var s models.Submission
 			s.ContestId = pData.ContestID
 			s.Index = pData.Index
