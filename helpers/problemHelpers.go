@@ -48,14 +48,13 @@ func ProblemParser(rawData []byte) ([]models.Problem, error) {
 		if !ok {
 			fmt.Println("Bruh")
 		}
-		var tagArr []string
-		prob.Tags = &tagArr
+		var tagStr string
 		if len(tagsInt) > 0{
 			for _, tag := range tagsInt{
-				tagstr := tag.(string)
-				*prob.Tags = append(*prob.Tags, tagstr)
+				tagStr += "," + tag.(string)
 			}
 		}
+		prob.Tags = &tagStr
 		processedProblems = append(processedProblems, prob)
 	}
 

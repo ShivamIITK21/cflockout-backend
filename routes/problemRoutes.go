@@ -7,4 +7,5 @@ import(
 
 func ProblemRoutes(incomingRoutes *gin.Engine){
 	incomingRoutes.GET("/problems/refresh", controllers.RefreshController())
+	incomingRoutes.GET("/problems", controllers.GetUserSolvedProblems())
 }

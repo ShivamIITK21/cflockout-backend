@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/ShivamIITK21/cflockout-backend/db"
 	"github.com/ShivamIITK21/cflockout-backend/helpers"
@@ -20,11 +22,13 @@ func RefreshController() gin.HandlerFunc{
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while generating request"})
+			return
 		}
 
 		res, err := client.Do(req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while fetching problems from CF api"})
+			return 
 		}
 
 		defer res.Body.Close()
@@ -32,23 +36,98 @@ func RefreshController() gin.HandlerFunc{
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while reading problem body"})
+			return 
 		}
 
 		problems, err := helpers.ProblemParser(body)
 		if err != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while parsing the problems in the server"})
+			return 
 		}
 
 		result := db.DB.Where("1 = 1").Delete(&models.Problem{})
 		if result.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not empty database"})
+			return 
 		}
 		
 		result = db.DB.Create(&problems)
 		if result.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not fill database"})
+			return 
 		}
 
 		c.JSON(200, gin.H{"chill" : "hai"})
+	}
+}
+
+
+func GetUserSolvedProblems() gin.HandlerFunc{
+
+	return func(c* gin.Context){
+		user := c.Query("user")
+
+		client := &http.Client{}
+		url := "https://codeforces.com/api/user.status?handle=" + user
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while generating request"})
+			return 
+		}
+
+		res, err := client.Do(req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while fetching status from CF api"})
+			return 
+		}
+
+		defer res.Body.Close()
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while reading status body"})
+			return 
+		}
+
+		submissions, err := helpers.ExtractSubmissionInfo(body)
+		if err != nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":err.Error()})
+			return
+		}
+
+		ACs := make(map[string]int)
+		WAs := make(map[string]int)
+		for _, s := range submissions{
+			if *s.Verdict == "OK" {
+				ACs[strconv.Itoa(int(s.ContestId)) + *s.Index] = 1
+			} else {
+				WAs[strconv.Itoa(int(s.ContestId)) + *s.Index] = 1
+			}
+		}
+
+		var allProbs []models.Problem
+		result := db.DB.Find(&allProbs)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error in retrieving from DB"})
+			return
+		}
+
+		var allProbData []models.Submission
+		for i, pData := range allProbs{
+			var s models.Submission
+			s.ContestId = pData.ContestID
+			s.Index = pData.Index
+			v := "NA"
+			if ACs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1{
+				v = "AC"
+			} else if WAs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1{
+				v = "WA"
+			}
+			s.Verdict = &v
+			allProbData = append(allProbData, s)
+		}
+
+		c.JSON(200, allProbData)
 	}
 }
