@@ -38,6 +38,9 @@ func ExtractSubmissionInfo(rawData []byte) ([]models.Submission, error) {
 		}
 		tempidx := prob["index"].(string)
 		sub.Index = &tempidx
+		sub.Rating = 0
+		var name string
+		sub.Name = &name
 		sub.ContestId = uint(prob["contestId"].(float64))
 
 		processedSubmissions = append(processedSubmissions, sub)

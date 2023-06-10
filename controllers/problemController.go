@@ -122,6 +122,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 			var s models.Submission
 			s.ContestId = pData.ContestID
 			s.Index = pData.Index
+			s.Rating = pData.Rating
 			v := "NA"
 			if ACs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1 && user != "" {
 				v = "AC"
@@ -129,6 +130,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 				v = "WA"
 			}
 			s.Verdict = &v
+			s.Name = pData.Name
 			allProbData = append(allProbData, s)
 		}
 
