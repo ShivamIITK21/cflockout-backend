@@ -67,7 +67,12 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 		user := c.Query("user")
 
 		client := &http.Client{}
-		url := "https://codeforces.com/api/user.status?handle=" + user
+		var url string
+		if(user != ""){
+			url = "https://codeforces.com/api/user.status?handle=" + user
+		}else{
+			url = "https://codeforces.com/api/user.status?handle=yuvrajKharayat"
+		}
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -118,14 +123,17 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 			s.ContestId = pData.ContestID
 			s.Index = pData.Index
 			v := "NA"
-			if ACs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1{
+			if ACs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1 && user != "" {
 				v = "AC"
-			} else if WAs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1{
+			} else if WAs[strconv.Itoa(int(s.ContestId)) + *s.Index] == 1 && user != ""{
 				v = "WA"
 			}
 			s.Verdict = &v
 			allProbData = append(allProbData, s)
 		}
+
+		helpers.SortSubmissions(&allProbData)
+
 
 		c.JSON(200, allProbData)
 	}
