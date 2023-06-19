@@ -1,0 +1,105 @@
+package controllers
+
+import (
+	"net/http"
+
+	"github.com/ShivamIITK21/cflockout-backend/db"
+	"github.com/ShivamIITK21/cflockout-backend/helpers"
+	"github.com/ShivamIITK21/cflockout-backend/models"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+)
+
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), err
+}
+
+func VerifyPassword(userPass string, providedPass string) (bool, string) {
+	err := bcrypt.CompareHashAndPassword([]byte(providedPass), []byte(userPass))
+	var match bool = true
+	var msg string = ""
+	if err != nil {
+		match = false
+		msg = "Incorrect email or password"
+	}
+	return match, msg
+}
+
+
+func Login() gin.HandlerFunc{
+	return func(c *gin.Context){
+		var user models.User
+		err := c.BindJSON(&user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Could not bind json"})
+			return 
+		}
+
+		var retUser models.User
+		result := db.DB.First(&retUser, user.Username)
+
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error":"user not in db"})
+			return 
+		}
+
+		passValid, msg := VerifyPassword(*retUser.Password, *user.Password)
+		if !passValid {
+			c.JSON(http.StatusBadGateway, gin.H{"error":msg})
+			return 
+		}
+		
+		token, _, err := helpers.GenerateTokens(*retUser.Username, *retUser.CFid, *retUser.UserType)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not generate token"})
+			return 
+		}
+
+		err = helpers.UpdateAllTokens(token, *retUser.Username)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"could not update the token"})
+			return 
+		}
+
+		c.JSON(http.StatusOK, gin.H{"token":token})
+	}
+} 
+
+func Signup() gin.HandlerFunc{
+	return func(c *gin.Context){
+
+		var user models.User
+		err := c.BindJSON(&user)
+		if err!= nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't bind JSON object"})
+		}
+		pass, err := HashPassword(*user.Password)
+		if err!= nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't hash password"})
+		}
+		user.Password = &pass
+
+		prob, err := helpers.GetProblem()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"error in generating random problen"})
+		}
+			
+		go helpers.VerifyUser(prob, user)
+		
+	}
+}
+
+func Logout() gin.HandlerFunc{
+	return func(c *gin.Context){
+		// var user models.User
+		// err := c.BindJSON(&user)
+		// if err != nil {
+		// 	c.JSON()
+		// }
+	}
+}
