@@ -1,13 +1,13 @@
 package helpers
 
 import (
-	"net/http"
 	"io/ioutil"
-    "math/rand"
+	"math/rand"
+	"net/http"
 	"time"
-	
-	"github.com/ShivamIITK21/cflockout-backend/models"
+
 	"github.com/ShivamIITK21/cflockout-backend/db"
+	"github.com/ShivamIITK21/cflockout-backend/models"
 )
 
 func GetProblem() (models.Problem, error){
@@ -24,12 +24,11 @@ func GetProblem() (models.Problem, error){
 	return allProbs[ind], nil
 }
 
-func VerifyUser(problem models.Problem, user models.User) error{
+func VerifyUser(prob models.Problem, user models.User) error{
 
-	time.Sleep(80 * time.Second)
-	var prob models.Problem
+	time.Sleep(40 * time.Second)
 	client := &http.Client{}
-	url := "https://codeforces.com/api/user.status?handle=" + *user.Username + "&count=10"
+	url := "https://codeforces.com/api/user.status?handle=" + *user.CFid + "&count=10"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -39,7 +38,7 @@ func VerifyUser(problem models.Problem, user models.User) error{
 		return err
 	}
 	defer res.Body.Close()
-
+	
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil{
 		return err
@@ -51,7 +50,7 @@ func VerifyUser(problem models.Problem, user models.User) error{
 
 	compileError := false
 	for _, s := range submissions{
-		if(*s.Verdict=="COMPILATION_ERROR" && s.ContestId==prob.ContestID && s.Index==prob.Index){
+		if(*s.Verdict=="COMPILATION_ERROR" && s.ContestId==prob.ContestID && *s.Index==*prob.Index){
 			compileError = true
 		}
 	}

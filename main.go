@@ -1,15 +1,15 @@
 package main
 
 import (
-	// "os"
+	"os"
 
-	// "github.com/ShivamIITK21/cflockout-backend/routes"
-	"fmt"
-	"log"
+	"github.com/ShivamIITK21/cflockout-backend/routes"
+	// "fmt"
+	// "log"
 
-	"github.com/ShivamIITK21/cflockout-backend/db"
-	"github.com/ShivamIITK21/cflockout-backend/helpers"
-	"github.com/ShivamIITK21/cflockout-backend/models"
+	// "github.com/ShivamIITK21/cflockout-backend/db"
+	// "github.com/ShivamIITK21/cflockout-backend/helpers"
+	// "github.com/ShivamIITK21/cflockout-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,41 +32,42 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func main(){
 
-	// port := os.Getenv("SERVER_PORT")
-	// if port == "" {
-	// 	port = "8080"
-	// }
-
-	// router := gin.New()
-	// router.Use(gin.Logger())
-    // router.Use(CORSMiddleware())
-
-	// routes.TestRoute(router)
-	// routes.ProblemRoutes(router)
-
-
-	// router.Run(":"+port)
-
-	var user models.User
-	z := "Rounak Sharma"
-	user.CFid = &z
-	user.Password = &z
-	user.Username = &z
-	user.UserType = &z
-	user.Token = &z
-
-	db.DB.Create(&user)
-	
-	var x helpers.SignedDetails
-	x.Username = "Shivam"
-	x.CFid = "phoenix2913"
-	x.UserType = "deuiedsba"
-	token, _, err := helpers.GenerateTokens(x.Username, x.CFid, x.UserType)
-	if err!=nil {
-		log.Fatal("chud gaya")
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
 	}
-	helpers.UpdateAllTokens(token, z)
-	claims, _ := helpers.ValidateToken(token)
-	fmt.Println(claims)
+
+	router := gin.New()
+	router.Use(gin.Logger())
+    router.Use(CORSMiddleware())
+
+	routes.TestRoute(router)
+	routes.ProblemRoutes(router)
+	routes.AuthRoutes(router)
+
+
+	router.Run(":"+port)
+
+	// var user models.User
+	// z := "Rounak Sharma"
+	// user.CFid = &z
+	// user.Password = &z
+	// user.Username = &z
+	// user.UserType = &z
+	// user.Token = &z
+
+	// db.DB.Create(&user)
+	
+	// var x helpers.SignedDetails
+	// x.Username = "Shivam"
+	// x.CFid = "phoenix2913"
+	// x.UserType = "deuiedsba"
+	// token, _, err := helpers.GenerateTokens(x.Username, x.CFid, x.UserType)
+	// if err!=nil {
+	// 	log.Fatal("chud gaya")
+	// }
+	// helpers.UpdateAllTokens(token, z)
+	// claims, _ := helpers.ValidateToken(token)
+	// fmt.Println(claims)
 
 }

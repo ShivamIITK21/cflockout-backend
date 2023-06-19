@@ -15,6 +15,12 @@ func RefreshController() gin.HandlerFunc{
 	
 	return func(c* gin.Context) {
 
+		user_type := c.GetString("user_type")
+		if(user_type != "admin"){
+			c.JSON(http.StatusBadRequest, gin.H{"error":"You don't have permissions"})
+			return
+		}
+
 		client := &http.Client{}
 
 		url := "https://codeforces.com/api/problemset.problems"
