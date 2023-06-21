@@ -2,14 +2,14 @@ package main
 
 import (
 	"os"
-
-	"github.com/ShivamIITK21/cflockout-backend/routes"
 	// "fmt"
-	// "log"
-
+	
 	// "github.com/ShivamIITK21/cflockout-backend/db"
 	// "github.com/ShivamIITK21/cflockout-backend/helpers"
+	// "gorm.io/datatypes"
+	// "github.com/ShivamIITK21/cflockout-backend/helpers"
 	// "github.com/ShivamIITK21/cflockout-backend/models"
+	"github.com/ShivamIITK21/cflockout-backend/routes"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,30 +44,51 @@ func main(){
 	routes.TestRoute(router)
 	routes.ProblemRoutes(router)
 	routes.AuthRoutes(router)
+	routes.LockoutRoutes(router)
 
 
 	router.Run(":"+port)
 
-	// var user models.User
-	// z := "Rounak Sharma"
-	// user.CFid = &z
-	// user.Password = &z
-	// user.Username = &z
-	// user.UserType = &z
-	// user.Token = &z
+	// var z map[string]string = make(map[string]string)
+	// z["Yuvraj"] = "23658"
+	// z["Shivam"] = "63218"
+	// z["Devansh"] = "23908"
 
-	// db.DB.Create(&user)
-	
-	// var x helpers.SignedDetails
-	// x.Username = "Shivam"
-	// x.CFid = "phoenix2913"
-	// x.UserType = "deuiedsba"
-	// token, _, err := helpers.GenerateTokens(x.Username, x.CFid, x.UserType)
-	// if err!=nil {
-	// 	log.Fatal("chud gaya")
+	// var prob models.Problem
+	// prob.ContestID = 3256
+	// s := "A"
+	// prob.Index = &s
+	// prob.Name = &s
+	// prob.Rating = 1678
+	// prob.Tags = &s
+	// var zz []models.ProblemInfo
+	// var k models.ProblemInfo
+	// k.Task = prob
+	// k.Score = &s
+	// k.FirstSolvedBy = &s
+	// zz = append(zz, k)
+	// k.Task = prob
+	// k.Score = &s
+	// k.FirstSolvedBy = &s
+	// zz = append(zz, k)
+	// k.Task = prob
+	// k.Score = &s
+	// k.FirstSolvedBy = &s
+	// zz = append(zz, k)
+
+	// var sd models.SessionData
+	// sd.Participants = &z
+	// sd.Problems = datatypes.NewJSONType(zz)
+
+	// lockout := models.Lockout{
+	// 	SessionId: &s,
+	// 	SessionData: datatypes.NewJSONType(sd),
 	// }
-	// helpers.UpdateAllTokens(token, z)
-	// claims, _ := helpers.ValidateToken(token)
-	// fmt.Println(claims)
+	// db.DB.Create(lockout)
+
+	// var found models.Lockout
+
+	// db.DB.First(&found)
+	// fmt.Println(found)
 
 }
