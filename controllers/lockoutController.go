@@ -16,6 +16,8 @@ type CreateDetails struct {
 	Participants []string `json:"participants"`
 	Ratings      []string `json:"ratings"`
 	Score        []string `json:"score"`
+	StartTime    int64    `json:"start_time"`
+	Duration     int64    `json:"duration"`
 }
 
 func GetRandomID() string {
@@ -34,17 +36,22 @@ func CreateLockoutController() gin.HandlerFunc {
 		}
 
 		if len(req.Participants) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error" : "one or more participaants are needed"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "one or more participaants are needed"})
 			return
 		}
 
 		if len(req.Ratings) != len(req.Score) {
-			c.JSON(http.StatusBadRequest, gin.H{"error" : "Length of ratings and score not equal"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Length of ratings and score not equal"})
 			return
 		}
 
 		if len(req.Ratings) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error" : "Len of ratings should not be zero"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Len of ratings should not be zero"})
+			return
+		}
+		
+		if req.Duration > 86400 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Lockout duration exceeds maximum limit of 1 day"})
 			return
 		}
 
@@ -52,7 +59,7 @@ func CreateLockoutController() gin.HandlerFunc {
 			var usr models.User
 			result := db.DB.Where("username = ?", username).First(&usr)
 			if result.Error != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error" : "user not in db"})
+				c.JSON(http.StatusBadRequest, gin.H{"error": "user not in db"})
 				return
 			}
 		}
@@ -66,7 +73,7 @@ func CreateLockoutController() gin.HandlerFunc {
 		var probInfo []models.ProblemInfo
 		for i, rating := range req.Ratings {
 			prob, err := helpers.GetProblemByRating(rating)
-			if(err != nil){
+			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Error while generating problems"})
 				return
 			}
@@ -84,9 +91,11 @@ func CreateLockoutController() gin.HandlerFunc {
 		var session models.Lockout
 		session.SessionId = &id
 		session.SessionData = datatypes.NewJSONType(sessionData)
+		session.StartTime = req.StartTime
+		session.Duration = req.Duration
 		db.DB.Create(&session)
 
-		c.JSON(http.StatusOK, gin.H{"chill":"hai"})
+		c.JSON(http.StatusOK, gin.H{"chill": "hai"})
 	}
 }
 
@@ -99,21 +108,21 @@ func LockoutController() gin.HandlerFunc {
 		var lockout models.Lockout
 		result := db.DB.Where("session_id = ?", session_id).First(&lockout)
 		if result.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error" : "Session id invalid"})
-			return 
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Session id invalid"})
+			return
 		}
 
 		if status != "admin" {
 			user_map := *lockout.SessionData.Data().Participants
 			found := false
-			for reg_user := range user_map{
+			for reg_user := range user_map {
 				if user == reg_user {
 					found = true
 				}
 			}
 			if !found {
-				c.JSON(http.StatusBadRequest, gin.H{"error":"You are not a participant of this lockout"})
-				return 
+				c.JSON(http.StatusBadRequest, gin.H{"error": "You are not a participant of this lockout"})
+				return
 			}
 		}
 

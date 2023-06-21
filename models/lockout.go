@@ -18,4 +18,6 @@ type SessionData struct {
 type Lockout struct {
 	SessionId   *string                         `json:"sessionid" gorm:"PRIMARY_KEY; NOT NULL"`
 	SessionData datatypes.JSONType[SessionData] `json:"session_data"`
+	StartTime	int64							`json:"start_time"`
+	Duration	int64							`json:"duration"`
 }
