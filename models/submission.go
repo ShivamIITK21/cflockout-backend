@@ -7,4 +7,5 @@ type Submission struct {
 	Verdict     *string `json:"verdict"`
 	Rating		uint	`json:"rating"`
 	Name      	*string   `json:"name"`
+	Author		*string  `json:"author"`
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -101,6 +102,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 		}
 
 		submissions, err := helpers.ExtractSubmissionInfo(body)
+		fmt.Println(*submissions[0].Author)
 		if err != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":err.Error()})
 			return
@@ -137,6 +139,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 			}
 			s.Verdict = &v
 			s.Name = pData.Name
+			s.Author = &user
 			allProbData = append(allProbData, s)
 		}
 

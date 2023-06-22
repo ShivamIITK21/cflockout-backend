@@ -20,3 +20,14 @@ func SortSubmissions(data *[]models.Submission){
 	sort.Sort(sortCmp(*data))
 }
 
+type sortByTime []models.Submission
+
+func(a sortByTime) Len() int {return len(a)}
+func(a sortByTime) Swap(i, j int) {a[i], a[j] = a[j], a[i]}
+func(a sortByTime) Less(i, j int) bool {
+	return a[i].TimeCreated < a[j].TimeCreated
+}
+
+func SortSubmissionsByTime(data *[]models.Submission){
+	sort.Sort(sortByTime(*data))
+}

@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/ShivamIITK21/cflockout-backend/db"
 	"github.com/ShivamIITK21/cflockout-backend/helpers"
@@ -16,7 +18,7 @@ type CreateDetails struct {
 	Participants []string `json:"participants"`
 	Ratings      []string `json:"ratings"`
 	Score        []string `json:"score"`
-	StartTime    int64    `json:"start_time"`
+	StartsIn   int64    `json:"start_time"`
 	Duration     int64    `json:"duration"`
 }
 
@@ -55,9 +57,19 @@ func CreateLockoutController() gin.HandlerFunc {
 			return
 		}
 
+		if req.Duration < 60 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Lockout duration can't be less than a minue"})
+			return
+		}
+
+		if req.StartsIn < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Lockout start time is in past"})
+			return
+		}
+
 		for _, username := range req.Participants {
 			var usr models.User
-			result := db.DB.Where("username = ?", username).First(&usr)
+			result := db.DB.Where("c_fid = ?", username).First(&usr)
 			if result.Error != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "user not in db"})
 				return
@@ -91,13 +103,65 @@ func CreateLockoutController() gin.HandlerFunc {
 		var session models.Lockout
 		session.SessionId = &id
 		session.SessionData = datatypes.NewJSONType(sessionData)
-		session.StartTime = req.StartTime
+		session.StartsIn = req.StartsIn
 		session.Duration = req.Duration
+		session.Processing = true
 		db.DB.Create(&session)
+
+		go SessionHandler(*session.SessionId)		
 
 		c.JSON(http.StatusOK, gin.H{"chill": "hai"})
 	}
 }
+
+
+func SessionHandler(session_id string){
+	var lockout models.Lockout
+	db.DB.Where("session_id = ?", session_id).First(&lockout)
+	time.Sleep(time.Duration(lockout.StartsIn) * time.Second)
+	start_time := time.Now().Unix()
+	for{
+		if(start_time + lockout.Duration + 120 <= time.Now().Unix()){
+			break;
+		}
+		
+		db.DB.Where("session_id = ?", session_id).First(&lockout)
+
+		var allSubmissions []models.Submission
+		for participant := range *lockout.SessionData.Data().Participants{
+			newSubmissions, err := helpers.RequestSubmissions(participant, 10)
+			if err != nil {
+				db.DB.Model(&models.Lockout{}).Where("session_id = ?", session_id).Update("processing", false)
+				return
+			}
+			allSubmissions = append(allSubmissions, newSubmissions...)
+		}
+
+		helpers.SortSubmissionsByTime(&allSubmissions)
+
+		for _, submission := range allSubmissions{
+			for _, problem := range lockout.SessionData.Data().Problems.Data() {
+				if (problem.Task.ContestID == submission.ContestId) && (problem.Task.Index == submission.Index) && (*problem.FirstSolvedBy=="") {
+					problem.FirstSolvedBy = submission.Author
+					for user, score := range *lockout.SessionData.Data().Participants{
+						if user == *submission.Author{
+							userScore, _ := strconv.Atoi(score)
+							probScore, _ := strconv.Atoi(*problem.Score)
+							newScore := strconv.Itoa(userScore + probScore)
+							(*lockout.SessionData.Data().Participants)[user] = newScore
+						}
+					}	
+				}
+			}
+		}	
+		
+		db.DB.Model(&lockout).Updates(lockout)
+		
+		time.Sleep(5 * time.Second)
+	}
+	
+}
+
 
 func LockoutController() gin.HandlerFunc {
 	return func(c *gin.Context) {
