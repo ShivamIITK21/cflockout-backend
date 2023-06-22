@@ -3,6 +3,7 @@ package controllers
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -110,7 +111,7 @@ func CreateLockoutController() gin.HandlerFunc {
 
 		go SessionHandler(*session.SessionId)		
 
-		c.JSON(http.StatusOK, gin.H{"chill": "hai"})
+		c.JSON(http.StatusOK, gin.H{"session_id": *session.SessionId})
 	}
 }
 
@@ -118,7 +119,9 @@ func CreateLockoutController() gin.HandlerFunc {
 func SessionHandler(session_id string){
 	var lockout models.Lockout
 	db.DB.Where("session_id = ?", session_id).First(&lockout)
+	fmt.Println("Waiting for lockout to start")
 	time.Sleep(time.Duration(lockout.StartsIn) * time.Second)
+	fmt.Println("Lockout Started!")
 	start_time := time.Now().Unix()
 	for{
 		if(start_time + lockout.Duration + 120 <= time.Now().Unix()){
@@ -126,7 +129,7 @@ func SessionHandler(session_id string){
 		}
 		
 		db.DB.Where("session_id = ?", session_id).First(&lockout)
-
+		
 		var allSubmissions []models.Submission
 		for participant := range *lockout.SessionData.Data().Participants{
 			newSubmissions, err := helpers.RequestSubmissions(participant, 10)
@@ -140,9 +143,9 @@ func SessionHandler(session_id string){
 		helpers.SortSubmissionsByTime(&allSubmissions)
 
 		for _, submission := range allSubmissions{
-			for _, problem := range lockout.SessionData.Data().Problems.Data() {
-				if (problem.Task.ContestID == submission.ContestId) && (problem.Task.Index == submission.Index) && (*problem.FirstSolvedBy=="") {
-					problem.FirstSolvedBy = submission.Author
+			for i, problem := range lockout.SessionData.Data().Problems.Data() {
+				if (problem.Task.ContestID == submission.ContestId) && (*problem.Task.Index == *submission.Index) && (*problem.FirstSolvedBy=="") {
+					lockout.SessionData.Data().Problems.Data()[i].FirstSolvedBy = submission.Author
 					for user, score := range *lockout.SessionData.Data().Participants{
 						if user == *submission.Author{
 							userScore, _ := strconv.Atoi(score)
