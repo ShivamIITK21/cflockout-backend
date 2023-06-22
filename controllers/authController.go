@@ -78,6 +78,13 @@ func Signup() gin.HandlerFunc{
 		if err!= nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't bind JSON object"})
 		}
+
+		var dummy models.User
+		result := db.DB.Where("username = ?", user.Username).First(&dummy)
+		if result.Error == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error":"This username already exists"})
+			return
+		}
 		
 		pass, err := HashPassword(*user.Password)
 		if err!= nil{
