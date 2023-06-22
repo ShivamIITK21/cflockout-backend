@@ -1,8 +1,9 @@
 package helpers
 
-import(
+import (
 	"encoding/json"
 	"errors"
+
 	"github.com/ShivamIITK21/cflockout-backend/models"
 )
 
@@ -24,25 +25,55 @@ func ExtractSubmissionInfo(rawData []byte) ([]models.Submission, error) {
 	}
 
 	for _, s := range submissionResult{
+
 		oneSub, ok := s.(map[string]interface{})
 		if !ok {
 			return processedSubmissions, err
 		}
+
 		var sub models.Submission
-		tempv := oneSub["verdict"].(string)
+
+		tempv, ok := oneSub["verdict"].(string)
+		if !ok {
+			return processedSubmissions, err
+		}
 		sub.Verdict = &tempv
-		sub.TimeCreated = int64(oneSub["creationTimeSeconds"].(float64))
+
+		time, ok := oneSub["creationTimeSeconds"].(float64)
+		if !ok {
+			return processedSubmissions, err
+		}
+		sub.TimeCreated = int64(time)
+
 		prob, ok := oneSub["problem"].(map[string]interface{})
 		if !ok {
 			return processedSubmissions, err
 		}
-		tempidx := prob["index"].(string)
+		
+		tempidx, ok := prob["index"].(string)
+		if !ok {
+			return processedSubmissions, err
+		}
 		sub.Index = &tempidx
-		sub.Rating = 0
-		var name string
+		
+		name, ok:= prob["name"].(string)
+		if(!ok) {
+			return processedSubmissions, err
+		}
 		sub.Name = &name
-		sub.ContestId = uint(prob["contestId"].(float64))
 
+		id, ok := prob["contestId"]
+		if id != nil {
+			sub.ContestId = uint(id.(float64))
+		}
+			
+		rating := prob["rating"]
+		if rating != nil{
+			sub.Rating = uint(rating.(float64))
+		} else {
+			sub.Rating = uint(0)
+		}
+		
 		processedSubmissions = append(processedSubmissions, sub)
 	}
 

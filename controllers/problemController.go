@@ -105,7 +105,7 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":err.Error()})
 			return
 		}
-
+		
 		ACs := make(map[string]int)
 		WAs := make(map[string]int)
 		for _, s := range submissions{
@@ -141,8 +141,8 @@ func GetUserSolvedProblems() gin.HandlerFunc{
 		}
 
 		helpers.SortSubmissions(&allProbData)
-
-
+		
 		c.JSON(200, allProbData)
+		
 	}
 }
