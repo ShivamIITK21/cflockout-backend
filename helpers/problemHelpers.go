@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
+	"strconv"
 
+	"github.com/ShivamIITK21/cflockout-backend/db"
 	"github.com/ShivamIITK21/cflockout-backend/models"
 )
 
@@ -59,4 +62,23 @@ func ProblemParser(rawData []byte) ([]models.Problem, error) {
 	}
 
 	return processedProblems, nil
+}
+
+func GetProblemByRating(rating string) (models.Problem, error) {
+
+	var problem models.Problem
+	num, err := strconv.Atoi(rating)
+	if err != nil{
+		return problem, err
+	}
+
+	var problems []models.Problem
+	db.DB.Where("rating = ?", uint(num)).Find(&problems)
+	err = errors.New("no problem found")
+	if len(problems) == 0{
+		return problem, err
+	}
+	ind := rand.Intn(len(problems))
+
+	return problems[ind], nil
 }

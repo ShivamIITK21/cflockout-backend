@@ -71,14 +71,15 @@ func Login() gin.HandlerFunc{
 	}
 	} 
 	
-	func Signup() gin.HandlerFunc{
-		return func(c *gin.Context){
-			var user models.User
-			err := c.BindJSON(&user)
-			if err!= nil{
-				c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't bind JSON object"})
-			}
-			pass, err := HashPassword(*user.Password)
+func Signup() gin.HandlerFunc{
+	return func(c *gin.Context){
+		var user models.User
+		err := c.BindJSON(&user)
+		if err!= nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't bind JSON object"})
+		}
+		
+		pass, err := HashPassword(*user.Password)
 		if err!= nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't hash password"})
 		}

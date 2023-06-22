@@ -27,12 +27,14 @@ func GetProblem() (models.Problem, error){
 func VerifyUser(prob models.Problem, user models.User) error{
 
 	time.Sleep(40 * time.Second)
+	
 	client := &http.Client{}
 	url := "https://codeforces.com/api/user.status?handle=" + *user.CFid + "&count=10"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
+
 	res, err := client.Do(req)
 	if err != nil {
 		return err
