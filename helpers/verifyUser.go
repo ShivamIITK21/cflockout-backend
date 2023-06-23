@@ -59,6 +59,13 @@ func VerifyUser(prob models.Problem, user models.User) error{
 
 	if compileError{
 		user_type := "user"
+
+		var curUsers []models.User
+		db.DB.Find(&curUsers)
+		if len(curUsers) == 0 {
+			user_type = "admin"
+		}
+
 		user.UserType = &user_type
 		token, _, err := GenerateTokens(*user.Username, *user.CFid, *user.UserType)
 		if err != nil{
