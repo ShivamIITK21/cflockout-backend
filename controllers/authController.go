@@ -67,7 +67,7 @@ func Login() gin.HandlerFunc{
 			return 
 		}
 		
-		c.JSON(http.StatusOK, gin.H{"token":token})
+		c.JSON(http.StatusOK, gin.H{"token":token, "cfID": *retUser.CFid})
 	}
 	} 
 	
@@ -77,25 +77,42 @@ func Signup() gin.HandlerFunc{
 		err := c.BindJSON(&user)
 		if err!= nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't bind JSON object"})
+			return
 		}
 		
 		pass, err := HashPassword(*user.Password)
 		if err!= nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"couldn't hash password"})
+			return
 		}
 		user.Password = &pass
 		
 		prob, err := helpers.GetProblem()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"error in generating random problen"})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{"problem": "codeforces.com/problemset/problem/" + strconv.FormatUint(uint64(prob.ContestID), 10) + "/" + *prob.Index})
 			
 		go helpers.VerifyUser(prob, user)
-		
 	}
 }
+
+func FindUser() gin.HandlerFunc{
+	return func(c *gin.Context){
+		username := c.Query("username")
+
+		var finduser models.User
+		db.DB.Where("username = ?", username).First(&finduser)
+		if finduser.Username == nil {
+			c.JSON(http.StatusOK, gin.H{"message":"Not found"})
+			return 
+		}
+		c.JSON(http.StatusOK, gin.H{"message":"User " + username + " was found"})
+	}
+}
+
 
 func Logout() gin.HandlerFunc{
 	return func(c *gin.Context){

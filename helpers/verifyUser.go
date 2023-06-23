@@ -26,7 +26,7 @@ func GetProblem() (models.Problem, error){
 
 func VerifyUser(prob models.Problem, user models.User) error{
 
-	time.Sleep(40 * time.Second)
+	time.Sleep(60 * time.Second)
 	
 	client := &http.Client{}
 	url := "https://codeforces.com/api/user.status?handle=" + *user.CFid + "&count=10"
