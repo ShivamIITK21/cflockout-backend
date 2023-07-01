@@ -69,7 +69,7 @@ func Login() gin.HandlerFunc{
 		
 		c.JSON(http.StatusOK, gin.H{"token":token, "cfID": *retUser.CFid})
 	}
-	} 
+} 
 	
 func Signup() gin.HandlerFunc{
 	return func(c *gin.Context){
