@@ -123,9 +123,18 @@ func FindUser() gin.HandlerFunc{
 
 func VerifyToken() gin.HandlerFunc{
 	return func(c *gin.Context){
-		
-		token := c.Query("token")
+		token := c.Request.Header.Get("token")
+
+		if token == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error":"No token"})
+			return
+		}
+
 		claims, msg := helpers.ValidateToken(token)
+		if msg != "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error":msg})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"message":msg, "cfid":claims.CFid, "username": claims.Username})
 	}
 }

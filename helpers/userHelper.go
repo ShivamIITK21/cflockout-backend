@@ -65,7 +65,7 @@ func ExtractSubmissionInfo(rawData []byte) ([]models.Submission, error) {
 		}
 		sub.Name = &name
 
-		id, ok := prob["contestId"]
+		id := prob["contestId"]
 		if id != nil {
 			sub.ContestId = uint(id.(float64))
 		}
