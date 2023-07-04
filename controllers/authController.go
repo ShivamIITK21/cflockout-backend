@@ -121,6 +121,16 @@ func FindUser() gin.HandlerFunc{
 }
 
 
+func VerifyToken() gin.HandlerFunc{
+	return func(c *gin.Context){
+		
+		token := c.Query("token")
+		claims, msg := helpers.ValidateToken(token)
+		c.JSON(http.StatusOK, gin.H{"message":msg, "cfid":claims.CFid, "username": claims.Username})
+	}
+}
+
+
 func Logout() gin.HandlerFunc{
 	return func(c *gin.Context){
 		// var user models.User
