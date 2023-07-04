@@ -104,6 +104,7 @@ func CreateLockoutController() gin.HandlerFunc {
 		var session models.Lockout
 		session.SessionId = &id
 		session.SessionData = datatypes.NewJSONType(sessionData)
+		fmt.Println(req.StartsIn, time.Now().Unix())
 		session.StartsIn = req.StartsIn
 		session.Duration = req.Duration
 		session.Processing = true
@@ -120,7 +121,9 @@ func SessionHandler(session_id string){
 	var lockout models.Lockout
 	db.DB.Where("session_id = ?", session_id).First(&lockout)
 	fmt.Println("Waiting for lockout to start")
-	time.Sleep(time.Duration(lockout.StartsIn) * time.Second)
+	for time.Now().Unix() < lockout.StartsIn {
+		time.Sleep(time.Second * 60)
+	}
 	fmt.Println("Lockout Started!")
 	start_time := time.Now().Unix()
 	for{
