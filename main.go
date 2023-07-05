@@ -49,46 +49,4 @@ func main(){
 
 	router.Run(":"+port)
 
-	// var z map[string]string = make(map[string]string)
-	// z["Yuvraj"] = "23658"
-	// z["Shivam"] = "63218"
-	// z["Devansh"] = "23908"
-
-	// var prob models.Problem
-	// prob.ContestID = 3256
-	// s := "A"
-	// prob.Index = &s
-	// prob.Name = &s
-	// prob.Rating = 1678
-	// prob.Tags = &s
-	// var zz []models.ProblemInfo
-	// var k models.ProblemInfo
-	// k.Task = prob
-	// k.Score = &s
-	// k.FirstSolvedBy = &s
-	// zz = append(zz, k)
-	// k.Task = prob
-	// k.Score = &s
-	// k.FirstSolvedBy = &s
-	// zz = append(zz, k)
-	// k.Task = prob
-	// k.Score = &s
-	// k.FirstSolvedBy = &s
-	// zz = append(zz, k)
-
-	// var sd models.SessionData
-	// sd.Participants = &z
-	// sd.Problems = datatypes.NewJSONType(zz)
-
-	// lockout := models.Lockout{
-	// 	SessionId: &s,
-	// 	SessionData: datatypes.NewJSONType(sd),
-	// }
-	// db.DB.Create(lockout)
-
-	// var found models.Lockout
-
-	// db.DB.First(&found)
-	// fmt.Println(found)
-
 }

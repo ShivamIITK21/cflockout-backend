@@ -3,6 +3,8 @@ package controllers
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
+	"io/ioutil"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -197,6 +199,58 @@ func LockoutController() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, lockout)
+
+	}
+}
+
+func GetRating() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		cfid := c.Query("cfid")
+
+		client := &http.Client{}
+		url := "https://codeforces.com/api/user.info?handles=" + cfid
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while generating request"})
+			return 
+		}
+
+		res, err := client.Do(req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while fetching user info"})
+			return 
+		}
+
+		defer res.Body.Close()
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while reading info"})
+			return 
+		}
+
+		var interfaceData map[string]interface{}
+		err = json.Unmarshal(body, &interfaceData)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while unmarshaling"})
+			return 
+		}
+
+		userInfo, ok := interfaceData["result"].([]interface{})
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while typecasting"})
+			return 
+		}
+
+		userData, ok := userInfo[0].(map[string]interface{})
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"Error while reading data"})
+			return 
+		}
+
+		rating, ok := userData["rating"]
+		c.JSON(200, gin.H{"rating": rating})
 
 	}
 }
