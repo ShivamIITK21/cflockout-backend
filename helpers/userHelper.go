@@ -3,6 +3,7 @@ package helpers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -104,6 +105,7 @@ func RequestSubmissions(user string, numberOfSubmissions int) ([]models.Submissi
 
 	client := &http.Client{}
 	var url string
+	fmt.Println(user)
 	if user != "" {
 		url = "https://codeforces.com/api/user.status?handle=" + user + "&count=" + strconv.Itoa(numberOfSubmissions)
 	} else {

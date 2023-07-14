@@ -40,8 +40,8 @@ func CreateLockoutController() gin.HandlerFunc {
 			return
 		}
 
-		if len(req.Participants) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "one or more participaants are needed"})
+		if len(req.Participants) == 1 && req.Participants[0]=="" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "One or more participants are needed"})
 			return
 		}
 
@@ -51,7 +51,7 @@ func CreateLockoutController() gin.HandlerFunc {
 		}
 
 		if len(req.Ratings) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Len of ratings should not be zero"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Number of problems should not be zero"})
 			return
 		}
 		
@@ -61,7 +61,7 @@ func CreateLockoutController() gin.HandlerFunc {
 		}
 
 		if req.Duration < 60 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Lockout duration can't be less than a minue"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Lockout duration can't be less than a minute"})
 			return
 		}
 
@@ -74,7 +74,7 @@ func CreateLockoutController() gin.HandlerFunc {
 			var usr models.User
 			result := db.DB.Where("c_fid = ?", username).First(&usr)
 			if result.Error != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "user not in db"})
+				c.JSON(http.StatusBadRequest, gin.H{"error": "User " + username + " is not registered"})
 				return
 			}
 		}
@@ -165,7 +165,7 @@ func SessionHandler(session_id string){
 		
 		db.DB.Model(&lockout).Updates(lockout)
 		
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 	
 }
