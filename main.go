@@ -36,7 +36,6 @@ func main(){
 	if port == "" {
 		port = "8080"
 	}
-
 	router := gin.New()
 	router.Use(gin.Logger())
     router.Use(CORSMiddleware())

@@ -8,7 +8,7 @@ This is the backend for CFLockout
 
 ```
 HOST=localhost
-USER=<postgres username>
+USER_DB=<postgres username>
 PASSWORD=<postgres pass>
 DB_NAME=<Name of DB>
 DB_PORT=<Port of DB>

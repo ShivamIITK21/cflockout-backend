@@ -22,7 +22,7 @@ type Config struct {
 func genConfig() *Config {
 	config := &Config{
 		Host: os.Getenv("HOST"),
-		User: os.Getenv("USER"),
+		User: os.Getenv("USER_DB"),
 		Password: os.Getenv("PASSWORD"),
 		DBName: os.Getenv("DB_NAME"),
 		Port: os.Getenv("DB_PORT"),
